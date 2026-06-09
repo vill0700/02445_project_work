@@ -69,7 +69,7 @@ def generate(
 
         for img_idx in range(images_per_prompt):
             current_seed = seed + img_idx
-            images = model.txt_to_img(
+            images = model.generate_image(
                 prompt=prompt,
                 seed=current_seed,
                 width=width,
