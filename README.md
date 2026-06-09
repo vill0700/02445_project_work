@@ -4,14 +4,25 @@ Statistical evaluation of AI learning models — DTU course 02445.
 
 ## Setup
 
-**1. Install dependencies**
+**1. Install system dependencies**
+
+```bash
+sudo apt install build-essential cmake nvidia-cuda-toolkit
+```
+
+**2. Install Python dependencies (with GPU support)**
 
 ```bash
 pip install uv
-uv sync
+SKBUILD_CMAKE_ARGS="-DSD_CUDA=ON" uv sync
 ```
 
-**2. Download model weights**
+> **CPU-only fallback:** skip the `SKBUILD_CMAKE_ARGS` prefix if you don't have an NVIDIA GPU:
+> ```bash
+> uv sync
+> ```
+
+**3. Download model weights**
 
 Model weights are not stored in git. Fetch them from Hugging Face:
 
@@ -40,6 +51,8 @@ python main.py generate --prompt "a man in a suit" --prompt "a woman in a dress"
 | `--steps` | | `4` | Sampling steps |
 | `--width` | `-W` | `1024` | Image width in pixels |
 | `--height` | `-H` | `1024` | Image height in pixels |
+| `--flux-model` | | `Q4_0` | FLUX quantization: `Q4_0` `Q4_1` `Q5_0` `Q5_1` `Q8_0` `f16` |
+| `--t5-model` | | `Q2_K` | T5 quantization: `Q2_K` `Q3_K` `Q4_0` `Q4_K` `Q5_0` `Q5_1` `Q8_0` `f16` |
 
 Output is saved to `output/batch_N/prompt_M/{seed}_{id}.png`. The batch number increments automatically on each run. A `metadata.json` is written to the batch directory recording the prompt, seed, and IDs for every image.
 
