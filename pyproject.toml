@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "typer>=0.26.7",
+    "stable-diffusion-cpp-python>=0.2.0",
 ]
 
 [dependency-groups]
