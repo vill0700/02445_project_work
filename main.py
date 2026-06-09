@@ -11,13 +11,18 @@ app = typer.Typer()
 FLUX_DIR = Path("FLUX.1-schnell-GGUF")
 GENDER_DIR = Path("gender-classification")
 
+FLUX_MODELS = ["Q4_0", "Q4_1", "Q5_0", "Q5_1", "Q8_0", "f16"]
+T5_MODELS = ["Q2_K", "Q3_K", "Q4_0", "Q4_K", "Q5_0", "Q5_1", "Q8_0", "f16"]
 
-def _load_flux() -> StableDiffusion:
+
+def _load_flux(flux_model: str, t5_model: str) -> StableDiffusion:
     return StableDiffusion(
-        diffusion_model_path=str(FLUX_DIR / "flux1-schnell-Q4_0.gguf"),
+        diffusion_model_path=str(FLUX_DIR / f"flux1-schnell-{flux_model}.gguf"),
         clip_l_path=str(FLUX_DIR / "clip_l.safetensors"),
-        t5xxl_path=str(FLUX_DIR / "t5xxl-Q4_0.gguf"),
+        t5xxl_path=str(FLUX_DIR / f"t5xxl-{t5_model}.gguf"),
         vae_path=str(FLUX_DIR / "ae.safetensors"),
+        keep_clip_on_cpu=True,
+        keep_vae_on_cpu=True,
     )
 
 
@@ -56,9 +61,25 @@ def generate(
         int,
         typer.Option("--height", "-H", help="Image height in pixels"),
     ] = 1024,
+    flux_model: Annotated[
+        str,
+        typer.Option("--flux-model", help=f"FLUX quantization variant: {', '.join(FLUX_MODELS)}"),
+    ] = "Q4_0",
+    t5_model: Annotated[
+        str,
+        typer.Option("--t5-model", help=f"T5 quantization variant: {', '.join(T5_MODELS)}"),
+    ] = "Q2_K",
 ):
     """Generate images from text prompts using FLUX.1-schnell."""
-    model = _load_flux()
+    if flux_model not in FLUX_MODELS:
+        typer.echo(f"Invalid --flux-model '{flux_model}'. Choose from: {', '.join(FLUX_MODELS)}", err=True)
+        raise typer.Exit(1)
+    if t5_model not in T5_MODELS:
+        typer.echo(f"Invalid --t5-model '{t5_model}'. Choose from: {', '.join(T5_MODELS)}", err=True)
+        raise typer.Exit(1)
+
+    typer.echo(f"Loading FLUX flux1-schnell-{flux_model}.gguf + T5 t5xxl-{t5_model}.gguf ...")
+    model = _load_flux(flux_model, t5_model)
     batch_dir = _next_batch_dir()
     typer.echo(f"Saving to {batch_dir}/")
 
@@ -87,6 +108,8 @@ def generate(
                     "prompt": prompt,
                     "image_id": img_idx,
                     "seed": current_seed,
+                    "flux_model": flux_model,
+                    "t5_model": t5_model,
                 })
 
     (batch_dir / "metadata.json").write_text(json.dumps({"images": records}, indent=2))
