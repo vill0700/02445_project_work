@@ -4,4 +4,11 @@ version = "0.1.0"
 description = "Project work for course 02445 at DTU Statistical evaluation of AI learning models"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "typer>=0.26.7",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.16",
+]
