@@ -7,6 +7,9 @@ requires-python = ">=3.12"
 dependencies = [
     "typer>=0.26.7",
     "stable-diffusion-cpp-python>=0.2.0",
+    "transformers>=4.40.0",
+    "torch>=2.0.0",
+    "pillow>=10.0.0",
 ]
 
 [dependency-groups]

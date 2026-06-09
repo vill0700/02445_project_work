@@ -1,3 +1,5 @@
+import csv
+import json
 from pathlib import Path
 from typing import Annotated
 
@@ -7,9 +9,10 @@ from stable_diffusion_cpp import StableDiffusion
 app = typer.Typer()
 
 FLUX_DIR = Path("FLUX.1-schnell-GGUF")
+GENDER_DIR = Path("gender-classification")
 
 
-def _load_model() -> StableDiffusion:
+def _load_flux() -> StableDiffusion:
     return StableDiffusion(
         diffusion_model_path=str(FLUX_DIR / "flux1-schnell-Q4_0.gguf"),
         clip_l_path=str(FLUX_DIR / "clip_l.safetensors"),
@@ -55,10 +58,11 @@ def generate(
     ] = 1024,
 ):
     """Generate images from text prompts using FLUX.1-schnell."""
-    model = _load_model()
+    model = _load_flux()
     batch_dir = _next_batch_dir()
     typer.echo(f"Saving to {batch_dir}/")
 
+    records = []
     for prompt_idx, prompt in enumerate(prompts):
         prompt_dir = batch_dir / f"prompt_{prompt_idx}"
         prompt_dir.mkdir(parents=True, exist_ok=True)
@@ -77,6 +81,53 @@ def generate(
                 path = prompt_dir / f"{current_seed}_{img_idx}.png"
                 image.save(str(path))
                 typer.echo(f"  {path}")
+                records.append({
+                    "path": str(path.relative_to(batch_dir)),
+                    "prompt_id": prompt_idx,
+                    "prompt": prompt,
+                    "image_id": img_idx,
+                    "seed": current_seed,
+                })
+
+    (batch_dir / "metadata.json").write_text(json.dumps({"images": records}, indent=2))
+
+
+@app.command()
+def classify(
+    batch: Annotated[
+        Path,
+        typer.Argument(help="Path to batch directory, e.g. output/batch_1"),
+    ],
+):
+    """Classify images in a batch by gender and save results to classifications.csv."""
+    from PIL import Image
+    from transformers import pipeline
+
+    metadata_path = batch / "metadata.json"
+    if not metadata_path.exists():
+        typer.echo(f"No metadata.json found in {batch}", err=True)
+        raise typer.Exit(1)
+
+    records = json.loads(metadata_path.read_text())["images"]
+
+    classifier = pipeline(
+        "image-classification",
+        model=str(GENDER_DIR),
+        local_files_only=True,
+    )
+
+    csv_path = batch / "classifications.csv"
+    with open(csv_path, "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["i", "class", "prompt_id", "image_id", "seed"])
+        for i, entry in enumerate(records):
+            image = Image.open(batch / entry["path"])
+            label = classifier(image)[0]["label"]  # "female" or "male"
+            gender = "W" if label == "female" else "M"
+            writer.writerow([i, gender, entry["prompt_id"], entry["image_id"], entry["seed"]])
+            typer.echo(f"  [{i}] {Path(entry['path']).name} → {gender}")
+
+    typer.echo(f"Saved {csv_path}")
 
 
 if __name__ == "__main__":
