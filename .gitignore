@@ -9,6 +9,9 @@ wheels/
 # Virtual environments
 .venv
 
+# Generated images
+output/
+
 # Model weights — download with download_models.py
 *.gguf
 *.safetensors
