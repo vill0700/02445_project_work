@@ -136,7 +136,6 @@ def classify(
     classifier = pipeline(
         "image-classification",
         model=str(GENDER_DIR),
-        local_files_only=True,
     )
 
     csv_path = batch / "classifications.csv"
