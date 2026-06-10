@@ -29,9 +29,6 @@
 #BSUB -e Output_%J.err 
 
 # here follow the commands you want to execute with input.in as the input file
-cd $HOME
 module purge
 module load python3/3.11.9
-export PYTHONPATH=""
-pip install diffusers transformers accelerate --quiet
-/appl9/python/3.11.9/bin/python3 main.py
+source myenv/bin/activate
