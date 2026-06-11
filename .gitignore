@@ -10,3 +10,10 @@ wheels/
 .venv/
 stable-diffusion-v1-5-GGUF/
 myenv/
+
+# Image assets
+images/
+
+# LSF job logs
+Output_*.out
+Output_*.err

@@ -1,7 +1,0 @@
-Loaded dependency [python3/3.11.9]: sqlite3/3.45.3
-Loaded dependency [python3/3.11.9]: gcc/12.3.0-binutils-2.40
-Loaded module: python3/3.11.9
-
-Loading python3/3.11.9
-  Loading requirement: sqlite3/3.45.3 gcc/12.3.0-binutils-2.40
-/zhome/c7/c/218674/.lsbatch/1781123634.28625931.shell: line 34: myenv/bin/activate: No such file or directory
