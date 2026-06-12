@@ -5,6 +5,11 @@ description = "Project work for course 02445 at DTU Statistical evaluation of AI
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "matplotlib>=3.11.0",
+    "numpy>=2.4.6",
+    "pandas>=3.0.3",
+    "scipy>=1.17.1",
+    "statsmodels>=0.14.6",
     "typer>=0.26.7",
 ]
 
